@@ -4,6 +4,7 @@ import java.util.*
 
 class Edge(val v1: String, val v2: String, val dist: Double)
 
+val path = mutableListOf<String>()
 
 /** One vertex of the graph, complete with mappings to neighbouring vertices */
 class Vertex(val name: String) : Comparable<Vertex> {
@@ -12,17 +13,42 @@ class Vertex(val name: String) : Comparable<Vertex> {
     var previous: Vertex? = null
     val neighbours = HashMap<Vertex, Double>()
 
+
     fun printPath() {
-        if (this == previous) {
-            print(name)
+        when (previous) {
+            this -> {
+                print(name)
+                path.add(name)
+
+            }
+            null -> {
+                print("$name(unreached)")
+            }
+            else -> {
+                previous!!.printPath()
+                print(" -> $name($dist)")
+                path.add(name)
+
+            }
         }
-        else if (previous == null) {
-            print("$name(unreached)")
+    }
+
+    fun getPathList(): MutableList<String> {
+        when (previous) {
+            this -> {
+                path.add(name)
+
+            }
+            null -> {
+                path.add("$name(unreached)")
+            }
+            else -> {
+                previous!!.getPathList()
+                path.add(name)
+
+            }
         }
-        else {
-            previous!!.printPath()
-            print(" -> $name($dist)")
-        }
+        return path
     }
 
     override fun compareTo(other: Vertex): Int {
@@ -68,7 +94,7 @@ class Graph(
         // set-up vertices
         for (v in graph.values) {
             v.previous = if (v == source) source else null
-            v.dist = if (v == source)  0.0 else Double.MAX_VALUE
+            v.dist = if (v == source) 0.0 else Double.MAX_VALUE
             q.add(v)
         }
 
@@ -100,15 +126,25 @@ class Graph(
     }
 
     /** Prints a path from the source to the specified vertex */
-    fun printPath(endName: String) {
+    fun printPath(endName: String): MutableList<String> {
         if (!graph.containsKey(endName)) {
             println("Graph doesn't contain end vertex '$endName'")
-            return
+            return mutableListOf()
         }
         print(if (directed) "Directed   : " else "Undirected : ")
         graph[endName]!!.printPath()
-        println()
-        if (showAllPaths) printAllPaths() else println()
+        return graph[endName]!!.getPathList()
+
+    }
+
+    /** returns a path from the source to the specified vertex */
+    fun getPath(endName: String): MutableList<String> {
+        if (!graph.containsKey(endName)) {
+            println("Graph doesn't contain end vertex '$endName'")
+            return mutableListOf()
+        }
+        return graph[endName]!!.getPathList()
+
     }
 
     /** Prints the path from the source to every vertex (output order is not guaranteed) */
@@ -120,34 +156,3 @@ class Graph(
         println()
     }
 }
-
-val GRAPH = listOf(
-    Edge("a", "b", 7.0),
-    Edge("a", "c", 9.0),
-//    Edge("a", "f", 14),
-//    Edge("b", "c", 10),
-//    Edge("b", "d", 15),
-//    Edge("c", "d", 11),
-//    Edge("c", "f", 2),
-//    Edge("d", "e", 6),
-//    Edge("e", "f", 9)
-)
-
-//const val START = "a"
-//const val END = "e"
-//
-//fun main(args: Array<String>) {
-//    with (Graph(GRAPH, true)) {   // directed
-//        dijkstra(START)
-//        printPath(END)
-//    }
-//    with (Graph(GRAPH, false)) {  // undirected
-//        dijkstra(START)
-//        printPath(END)
-//    }
-//}
-
-//Output:
-//Directed   : a -> c(9) -> d(20) -> e(26)
-//
-//Undirected : a -> c(9) -> f(11) -> e(20)
