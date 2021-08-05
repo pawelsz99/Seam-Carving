@@ -1,4 +1,0 @@
-SeamCarvingTest.java
- CheckFailException
- OutFile
- SeamCarvingTest
